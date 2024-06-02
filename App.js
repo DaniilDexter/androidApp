@@ -1,6 +1,6 @@
-import React, { useState, createContext, useContext } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React, { useState, createContext, useContext } from 'react'; // импорт нужных хуков и самого React 
+import { NavigationContainer } from '@react-navigation/native'; //импорт 
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';//импорт 
 import {
   Text,
   View,
@@ -12,23 +12,28 @@ import {
   Modal,
   TouchableNativeFeedback,
   Platform,
-} from 'react-native';
-import { Card } from 'react-native-paper';
-import Header from './components/Header';
+} from 'react-native'; //импорт нужных компонентов
+import { Card } from 'react-native-paper'; //импорт 
+import Header from './components/Header'; //импорт Header из другого файла
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window'); // модуль для получения размеров экрана для корректного отображения карточек
 
-const FavoritesContext = createContext();
+const FavoritesContext = createContext(); // создание контекста для возможности взаимодействия со списком избранных с разных экранов
 
-const HomeScreen = () => {
+//Главная страница
+const HomeScreen = () => { 
   return (
+    //View для корректного отображения экрана (Задаёт высоту экрану) (стили задавались с использование StyleSheet)
+    // ScrollView для возможности создания пролистывающегося списка карточек блюд
+    //реализация списка карточек через отдельный компонент
     <View style={styles.containerScreen}>
-      <ScrollView style={styles.scroll}>
+      <ScrollView style={styles.scroll} > 
         <UsingArrayList />
       </ScrollView>
     </View>
   );
 };
+// Страница о приложении
 const AboutScreen = () => (
   <View style={styles.containerScreen}>
     <View style={{height:'80%',rowGap:90, marginHorizontal:20}}>
@@ -52,10 +57,11 @@ const AboutScreen = () => (
     </View>
   </View>
 );
-
+// Экран с избранными блюдами
 const FavoritesScreen = () => {
-  const { favoriteMeals } = useContext(FavoritesContext);
-
+  const { favoriteMeals } = useContext(FavoritesContext);//Передаём массив с избранными блюдами через useContext 
+  // Реализация списка блюю через map
+  // Функция создаёт компоненты FavouriteCard, в качестве ключа передаётся индекс элемента массива, а сам элемент передаётся с помощью item
   return (
     <View style={styles.containerScreen}>
       <ScrollView style={styles.scroll}>
@@ -75,28 +81,30 @@ const FavoritesScreen = () => {
     </View>
   );
 };
-
+// Компонент для отображения списка блюд на главной страницу 
 const UsingArrayList = () =>
   meals.map((item, index) => <MealCard key={index} item={item} />);
-
+ //Карточка блюда, использующаяся на главной странице
 const MealCard = ({ item }) => {
-  const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false); //использование useState для отображения модального экрана
   const [liked, setLiked] = useState(item.liked); // Инициализировать liked из элемента
   const { favoriteMeals, addFavoriteMeal, removeFavoriteMeal } =
-    useContext(FavoritesContext);
+    useContext(FavoritesContext); //Использование контекста избранных для взаимодействия с массивом
 
+  //Функция для отслеживания нажатия на лайк
   const handleLikePress = () => {
-    setLiked(!liked);
+    setLiked(!liked); //Меняем значение на противоположное
     if (!liked) {
-      addFavoriteMeal({ ...item, liked: true }); // Передать liked при добавлении в избранное
+      addFavoriteMeal({ ...item}); // Добавляем элемент в массив с помощью функции из контекста
     } else {
-      removeFavoriteMeal(item);
+      removeFavoriteMeal(item); //Удаляем элемент из избранного с помощью функции из контекста
     }
   };
+  //Функция для открытия модального окна
   const openModal = () => {
     setModalVisible(true);
   };
-
+  //Функция для закрытия модального окна
   const closeModal = () => {
     setModalVisible(false);
   };
@@ -104,13 +112,17 @@ const MealCard = ({ item }) => {
   return (
     <Card style={styles.cards}>
       <View style={styles.cardRow}>
-        <Image source={{ uri: item.strMealThumb }} style={styles.image} />
+      {/* Компонент для работы с изображением uri для sourse берётся из свойсва объекта, а также прописаны стили для корректного отображения элемента */}
+        <Image source={{ uri: item.strMealThumb }} style={styles.image} /> 
         <View style={styles.cardMainColumn}>
+        {/* Основной список блюда */}
+        {/* Использование TouchableOpacity для возможности взаимодействия с Названием блюда (Открывается модальное окно принажатии) */}
           <TouchableOpacity onPress={openModal}>
             <Text style={styles.cardHeading}>{item.strMeal}</Text>
           </TouchableOpacity>
           <Text style={styles.cardMain}>{item.strCategory}</Text>
           <Text style={styles.cardMain}>{item.strArea}</Text>
+          {/* Использование TouchableOpacity для добавления функционала лайка */}
           <TouchableOpacity onPress={handleLikePress}>
             <Image
               style={styles.cardLike}
@@ -147,11 +159,13 @@ const MealCard = ({ item }) => {
               width: '90%',
             }}>
             <Text style={styles.cardHeading}>{item.strMeal}</Text>
+            {/* Кнопка для возможности закрытия окна на всех платформах */}
             <TouchableOpacity onPress={closeModal}>
               <Text style={{ color: 'red' }}>Close</Text>
             </TouchableOpacity>
           </View>
           <Text>{item.strInstructions}</Text>
+          {/* Функционал только для Android, сперва проверяется платформа, а потом рендерится компонент TouchableNativeFeedback, предназначенный только для Android */}
           {Platform.OS === 'android' && (
             <TouchableNativeFeedback
               onPress={closeModal}
@@ -171,7 +185,7 @@ const MealCard = ({ item }) => {
     </Card>
   );
 };
-
+// Карточка блюда, предназначенная для отображения в разделе Избранное(В ней убран функционал связанный с Like)
 const FavouriteCard = ({ item }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const openModal = () => {
@@ -213,7 +227,7 @@ const FavouriteCard = ({ item }) => {
             flex: 1,
             alignItems: 'center',
             justifyContent: 'space-between',
-            margin: 30,
+            margin: 20
           }}>
           <View
             style={{
@@ -247,17 +261,20 @@ const FavouriteCard = ({ item }) => {
   );
 };
 
+// Создаём навигацию
 const Tab = createBottomTabNavigator();
 
+// Основной функционал приложения
 export default function App() {
+  //Создание масива для избранных блюд
   const [favoriteMeals, setFavoriteMeals] = useState([]);
-
+  // Функция для добавления блюда в избранное (Проверяет на дубликаты, чтобы не вызывать ошибки)
   const addFavoriteMeal = (meal) => {
     if (!favoriteMeals.some((favMeal) => favMeal.idMeal === meal.idMeal)) {
       setFavoriteMeals([...favoriteMeals, meal]);
     }
   };
-
+  // Функция для удаления из избранного
   const removeFavoriteMeal = (meal) => {
     const updatedFavorites = favoriteMeals.filter(
       (favMeal) => favMeal.idMeal !== meal.idMeal
@@ -268,9 +285,13 @@ export default function App() {
   return (
     <FavoritesContext.Provider
       value={{ favoriteMeals, addFavoriteMeal, removeFavoriteMeal }}>
+      {/* Оборачивание контекста избранных блюд в провайдер для возможности взаимодействия с ним из разных экранов */}
       <NavigationContainer>
+      {/* Контейнер навигации, позволяющий переключать экраны приложения */}
         <View style={styles.container}>
+          {/* Использование компонента Header, импортированного из другого файла, для отображения на всех экранах */}
           <Header />
+          {/* Компонент для глобальной настройки навигации (Я выключил показ названий страниц, лэйблов у иконок и задал стили самой панели навигации) */}
           <Tab.Navigator
             screenOptions={{
               headerShown: false,
@@ -283,6 +304,7 @@ export default function App() {
             tabBarOptions={{
               showLabel: false,
             }}>
+            {/* Компонент для главного экрана, в него мы передали в качестве компонента наш HomeScreen*/}
             <Tab.Screen
               name="Home"
               component={HomeScreen}
@@ -295,6 +317,7 @@ export default function App() {
                 ),
               }}
             />
+            {/* Компонент для экрана о приложении, в него мы передали в качестве компонента наш AboutScreen*/}
             <Tab.Screen
               name="About"
               component={AboutScreen}
@@ -307,6 +330,7 @@ export default function App() {
                 ),
               }}
             />
+            {/* Компонент для экрана избранных, в него мы передали в качестве компонента наш FavoritesScreenn*/}
             <Tab.Screen
               name="Favorites"
               component={FavoritesScreen}
@@ -325,7 +349,7 @@ export default function App() {
     </FavoritesContext.Provider>
   );
 }
-
+// Массив со всеми блюдами, представленными на главной старнице
 const meals = [
   {
     idMeal: '52977',
@@ -338,7 +362,6 @@ const meals = [
       'https://www.themealdb.com/images/media/meals/58oia61564916529.jpg',
     strTags: 'Soup',
     ingredients: ['Lentils', 'Onion', 'Carrots'],
-    measures: ['1 cup ', '1 large', '1 large'],
   },
   {
     idMeal: '53026',
@@ -351,7 +374,6 @@ const meals = [
       'https://www.themealdb.com/images/media/meals/n3xxd91598732796.jpg',
     strTags: null,
     ingredients: ['Broad Beans', 'Spring Onions', 'Garlic Clove'],
-    measures: ['3 cups ', '6', '4'],
   },
   {
     idMeal: '52844',
@@ -364,7 +386,6 @@ const meals = [
       'https://www.themealdb.com/images/media/meals/wtsvxx1511296896.jpg',
     strTags: null,
     ingredients: ['Olive Oil', 'Bacon', 'Onion'],
-    measures: ['1 tblsp ', '2', '1 finely chopped '],
   },
   {
     idMeal: '52971',
@@ -377,7 +398,6 @@ const meals = [
       'https://www.themealdb.com/images/media/meals/1bsv1q1560459826.jpg',
     strTags: null,
     ingredients: ['Potatoes', 'Olive Oil', 'Green Pepper'],
-    measures: ['5 Large', '2 tbs', '1'],
   },
   {
     idMeal: '52785',
@@ -390,7 +410,6 @@ const meals = [
       'https://www.themealdb.com/images/media/meals/wuxrtu1483564410.jpg',
     strTags: 'Curry,Vegetarian,Cake',
     ingredients: ['Toor dal', 'Water', 'Salt'],
-    measures: ['1 cup', '2-1/2 cups', '1 tsp'],
   },
   {
     idMeal: '53013',
@@ -403,10 +422,9 @@ const meals = [
       'https://www.themealdb.com/images/media/meals/urzj1d1587670726.jpg',
     strTags: null,
     ingredients: ['Minced Beef', 'Olive Oil', 'Sesame Seed Burger Buns'],
-    measures: ['400g', '2 tbs', '2'],
   },
 ];
-
+// Таблица со стилями, в которой описаны классы для компонентов, использованных в. Была создана с помощью StyleSheet.create . ИСпользуется аналогично таблицей стилей CSS
 const styles = StyleSheet.create({
   cardHeading: {
     fontSize: 24,
